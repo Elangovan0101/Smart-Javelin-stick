@@ -1,0 +1,58 @@
+name: flutter_application_javelin
+description: "A new Flutter project."
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  typewritertext: ^3.0.8
+  esptouch_flutter: ^1.0.0
+  animated_text_kit: ^4.2.1
+  http: ^1.2.2 # Ensure this version is correct and only listed once
+
+
+  # Added dependencies for WebSocket, SQLite, and state management
+  provider: ^6.1.0
+  permission_handler: ^11.3.1
+  web_socket_channel: ^2.2.0
+  sqflite: ^2.0.0+4
+  path_provider: ^2.0.11
+  network_info_plus: ^6.0.1
+  sqflite_common_ffi: ^2.2.3
+  flutter_typeahead: ^5.2.0
+  esp_smartconfig: ^2.0.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/background-1.jpg  # Ensure this path matches where your image is located
+    - assets/grip.jpg
+    - assets/fgrip.jpg
+    - assets/agrip.jpg
+    - assets/angle.jpg
+  # Uncomment and add paths to your fonts here
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
