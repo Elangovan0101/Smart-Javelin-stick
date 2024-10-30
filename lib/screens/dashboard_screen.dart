@@ -1,7 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_javelin/widgets/PastThrowsScreen.dart';
-import 'package:flutter_application_javelin/widgets/player_guide_screen.dart'; // Import the new screen
+import 'package:flutter_application_javelin/widgets/player_guide_screen.dart';
 import 'package:web_socket_channel/io.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -20,23 +21,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'distance': 'No data available',
     'pressure': 'No data available',
   };
+  String suggestionMessage = 'To get started with javelin throw, please click the button.';
   bool timerStarted = false;
   IOWebSocketChannel? channel;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arguments = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final arguments = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?; 
     if (arguments != null) {
       name = arguments['name'] ?? 'User';
     }
   }
 
   void _connectWebSocket() {
-    channel = IOWebSocketChannel.connect('ws://192.168.4.1:81/'); // Update with your ESP8266 IP and port
+    channel = IOWebSocketChannel.connect('ws://192.168.4.1:81/');
     channel!.stream.listen(
       (message) {
-        print('Received message: $message'); // Debugging: Print received message
         try {
           final jsonData = jsonDecode(message);
           setState(() {
@@ -48,25 +49,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               'pressure': jsonData['pressure']?.toString() ?? 'No data available',
             };
           });
+          _generateSuggestion();
         } catch (e) {
-          print('Error decoding JSON: $e'); // Debugging: Print JSON decode error
+          print('Error decoding JSON: $e');
         }
       },
       onError: (error) {
-        print('WebSocket error: $error'); // Debugging: Print WebSocket error
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Unable to connect to the server. Please check your connection."),
-          ),
-        );
+        print('WebSocket error: $error');
       },
       onDone: () {
-        print('WebSocket connection closed'); // Debugging: Print WebSocket connection close
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Connection closed by the server."),
-          ),
-        );
+        print('WebSocket connection closed');
       },
     );
   }
@@ -80,21 +72,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _navigateToPastThrows() async {
-    await Navigator.push(
+  // Function to generate suggestions based on throw data
+  void _generateSuggestion() {
+    String suggestion = '';
+    
+    double? angle = double.tryParse(data['angle']);
+    double? velocity = double.tryParse(data['velocity']);
+    double? distance = double.tryParse(data['distance']);
+    double? tof = double.tryParse(data['tof']);
+    double? pressure = double.tryParse(data['pressure']);
+    
+    // Feedback based on angle
+    if (angle != null) {
+      if (angle < 25) {
+        suggestion += 'Consider increasing your throw angle for better distance. ';
+      } else if (angle > 35) {
+        suggestion += 'Try lowering your angle slightly for improved trajectory. ';
+      } else {
+        suggestion += 'Good angle! Maintaining this should help your throws. ';
+      }
+    }
+
+    // Feedback based on velocity and distance
+    if (velocity != null && distance != null) {
+      if (velocity < 15) {
+        suggestion += 'Focus on increasing your throw speed to cover more distance. ';
+      } else if (velocity > 20 && distance < 30) {
+        suggestion += 'Work on your release technique to make better use of your speed. ';
+      }     }
+
+    // Feedback based on pressure
+    if (pressure != null) {
+      if (pressure < 5) {
+        suggestion += 'Strengthen your grip for a more controlled throw. ';
+      } else if (pressure > 10) {
+        suggestion += 'Loosen your grip slightly for a smooth release. ';
+      }
+    }
+
+    // Feedback based on time of flight
+    if (tof != null) {
+      if (tof < 2) {
+        suggestion += 'Improve your follow-through for longer flight ';
+      } else {
+        suggestion += 'Great follow-through! Keep it consistent. ';
+      }
+    }
+
+    // Provide a summary suggestion if applicable
+    if (suggestion.isEmpty) {
+      suggestion = 'Keep practicing! Your progress is key to improvement.';
+    }
+
+    // Debugging statement to check the suggestion
+    print('Suggestion: $suggestion');
+
+    // Update the suggestion message to be displayed in the UI
+    setState(() {
+      suggestionMessage = suggestion.isNotEmpty ? suggestion : 'To get started with javelin throw, please click the button.';
+    });
+  }
+
+  void _navigateToPastThrows() {
+    Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const PastThrowsScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => PastThrowsScreen()), // Ensure PastThrowsScreen is imported correctly
     );
   }
 
-  void _navigateToPlayerGuide() async {
-    await Navigator.push(
+  void _navigateToPlayerGuide() {
+    Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const PlayerGuideScreen(), // Update with the PlayerGuideScreen
-      ),
+      MaterialPageRoute(builder: (context) => PlayerGuideScreen()), // Ensure PlayerGuideScreen is imported correctly
     );
   }
 
@@ -104,7 +153,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Javelin Throw Dashboard'),
         backgroundColor: Colors.blueGrey[900],
-        // Removed the IconButton from AppBar actions
       ),
       endDrawer: Drawer(
         child: ListView(
@@ -125,14 +173,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ListTile(
               title: const Text('Past Throws Data'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
                 _navigateToPastThrows();
               },
             ),
             ListTile(
               title: const Text('Player Guide'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
                 _navigateToPlayerGuide();
               },
             ),
@@ -158,9 +206,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: const TextStyle(fontSize: 30, color: Colors.white),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'To Get Started With Javelin throw Please click the button',
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  Text(
+                    suggestionMessage, // Display suggestion message here
+                    style: const TextStyle(fontSize: 20, color: Colors.white),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -280,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    channel?.sink.close(); // Close WebSocket connection
+    channel?.sink.close();
     super.dispose();
   }
 }
